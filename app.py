@@ -120,6 +120,34 @@ def create_student():
     
 
 
+#GET ALL STUDENTS
+
+@app.route("/api/students", methods=["GET"])
+def get_students():
+
+    try:
+        students= Student.query.all()
+        student_detail=[]
+
+        for student in students:
+            student_detail.append({
+                "id"         : student.id,
+                "full_name"  : student.full_name,
+                "email"      : student.email,
+                "age"        : student.age,
+                "cgpa"       : student.cgpa,
+                "is_active"  : student.is_active,
+                "joined_date": student.joined_date.strftime("%Y-%m-%d"),
+                "created_at" : student.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            })
+
+        return jsonify(student_detail),200
+    
+    except Exception as e:
+        return jsonify({"ERROR":"Internal server error","details":str(e)}), 500
+
+
+
 if __name__ == "__main__":
 
     try:
