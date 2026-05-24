@@ -139,6 +139,10 @@ def get_students():
     try:
         students= Student.query.all()
 
+        if not student:
+
+            return jsonify({"ERROR": "Student is not found"}),404
+
         student_detail=[]
 
         for student in students:
@@ -335,6 +339,11 @@ def get_courses():
         courses = Course.query.all()
 
         course_detail=[]
+
+        if not courses:
+
+            return jsonify({"ERROR": "Course is not found"}),404
+
 
         for course in courses:
 
