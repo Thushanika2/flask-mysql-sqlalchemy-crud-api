@@ -13,7 +13,9 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 def home():
     return "Flask + MySQL connected successfully!"
 
+
 db = SQLAlchemy(app)
+
 
 class Student(db.Model):
 
@@ -44,7 +46,7 @@ class Course(db.Model):
 
 
 
-#POST METHOD
+#POST METHOD (STUDENT)
 
 @app.route("/api/students", methods=["POST"])
 def create_student():
@@ -52,6 +54,7 @@ def create_student():
     data = request.get_json()
 
     if not data:
+
         return jsonify({"ERROR": "Request body is empty"}), 400
 
 
@@ -91,6 +94,7 @@ def create_student():
         joined_date = datetime.strptime(data["joined_date"],"%Y-%m-%d").date()
 
     except:
+
         return jsonify({"ERROR": "Joined date format must be YYYY-MM-DD"}), 400
 
 
@@ -103,15 +107,18 @@ def create_student():
 
     try:
         new_student     = Student(
+
             full_name   = data["full_name"],
             email       = data["email"],
             age         = data["age"],
             cgpa        = data.get("cgpa",0.0),
             is_active   = data.get("is_active", True),
             joined_date = datetime.strptime(data["joined_date"],"%Y-%m-%d")
+
         )
 
         db.session.add(new_student)
+
         db.session.commit()
 
         return jsonify({"MESSAGE": "Created Student Successfully!"}), 201
@@ -131,10 +138,13 @@ def get_students():
 
     try:
         students= Student.query.all()
+
         student_detail=[]
 
         for student in students:
+
             student_detail.append({
+
                 "id"         : student.id,
                 "full_name"  : student.full_name,
                 "email"      : student.email,
@@ -143,6 +153,7 @@ def get_students():
                 "is_active"  : student.is_active,
                 "joined_date": student.joined_date.strftime("%Y-%m-%d"),
                 "created_at" : student.created_at.strftime("%Y-%m-%d %H:%M:%S")
+
             })
 
         return jsonify(student_detail),200
@@ -166,6 +177,7 @@ def get_student(id):
             return jsonify({"ERROR": "Student is not found"}),404
 
         return jsonify({
+
             "id"         : student.id,
             "full_name"  : student.full_name,
             "email"      : student.email,
@@ -173,7 +185,8 @@ def get_student(id):
             "cgpa"       : student.cgpa,
             "is_active"  : student.is_active,
             "joined_date": student.joined_date.strftime("%Y-%m-%d"),
-            "created_at" : student.created_at.strftime("%Y-%m-%d")            
+            "created_at" : student.created_at.strftime("%Y-%m-%d") 
+                       
         })
 
     except Exception as e:
@@ -234,6 +247,7 @@ def delete_student(id):
     try:
 
         db.session.delete(student)
+
         db.session.commit()
 
         return jsonify({'MESSAGE': 'Student deleted successfully!'})
@@ -243,6 +257,73 @@ def delete_student(id):
         db.session.rollback()
 
         return jsonify({"ERROR":"Internal server error","details":str(e)}), 500
+
+
+
+#POST METHOD (COURSE)
+
+@app.route("/api/courses", methods=["POST"])
+def create_course():
+
+    data = request.get_json()
+
+    if not data:
+
+        return jsonify({"ERROR": "Request body is empty"}), 400
+
+
+    if not data.get("course_title"):
+
+        return jsonify({"ERROR": "Course title is required"}), 400
+
+    existing_title = Course.query.filter_by(course_title=data["course_title"]).first()
+
+    if existing_title:
+
+        return jsonify({"ERROR": "Course title already exists"}), 400
+
+
+    if not data.get("course_fee"):
+
+        return jsonify({"ERROR": "Course fee is required"}), 400
+
+
+    if data["course_fee"] <= 0:
+
+        return jsonify({"ERROR": "Course fee must be a positive number"}), 400
+
+
+    if not data.get("duration_months"):
+
+        return jsonify({"ERROR": "Duration months is required"}), 400
+    
+    if data["duration_months"] <= 0:
+
+        return jsonify({"ERROR": "Duration months must be a positive number"}), 400
+
+    try:
+        new_course     = Course(
+
+            course_title    = data["course_title"],
+            course_fee      = data["course_fee"],
+            duration_months = data["duration_months"],
+            description     = data.get("description"),
+            is_available    = data.get("is_available", True)
+
+        )
+
+        db.session.add(new_course)
+
+        db.session.commit()
+
+        return jsonify({"MESSAGE": "Created Course Successfully!"}), 201
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        return jsonify({"ERROR":"Internal server error","details":str(e)}), 500
+    
 
 
 
