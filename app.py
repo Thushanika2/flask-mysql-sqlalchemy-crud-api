@@ -422,7 +422,34 @@ def update_course(id):
         db.session.rollback()
 
         return jsonify({"ERROR":"Internal server error","details":str(e)}), 500
-       
+    
+
+
+#DELETE COURSE BY ID (DELETE)
+
+@app.route('/api/courses/<int:id>', methods=['DELETE'])
+def delete_course(id):
+
+    course = Course.query.get(id)
+
+    if not course:
+
+        return jsonify({'ERROR': 'Course is not found'}), 404
+
+    try:
+
+        db.session.delete(course)
+
+        db.session.commit()
+
+        return jsonify({'MESSAGE': 'Course deleted successfully!'}), 201
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        return jsonify({"ERROR":"Internal server error","details":str(e)}), 500
+    
 
 
 if __name__ == "__main__":
