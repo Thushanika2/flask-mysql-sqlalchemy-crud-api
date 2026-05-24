@@ -37,6 +37,9 @@ def create_student():
 
     data = request.get_json()
 
+    if not data:
+        return jsonify({"ERROR": "Request body is empty"}), 400
+
 
     if not data.get("full_name"):
 
@@ -48,10 +51,8 @@ def create_student():
         return jsonify({"ERROR": "Email is required"}), 400
 
 
-    existing_email = Student.query.filter_by(
-        email=data["email"]
-        ).first()
-
+    existing_email = Student.query.filter_by(email=data["email"]).first()
+    
     if existing_email:
 
         return jsonify({"ERROR": "Email already exists"}), 400
@@ -147,8 +148,8 @@ def get_student(id):
         student=Student.query.get(id)
 
         if not student:
-            
-            return jsonify({"ERROR": "Student is not found"}),400
+
+            return jsonify({"ERROR": "Student is not found"}),404
 
         return jsonify({
             "id"         : student.id,
@@ -167,7 +168,7 @@ def get_student(id):
 
 
 
-#UPDATE STUDENT BY ID
+#UPDATE STUDENT BY ID(PUT)
 
 @app.route('/api/students/<int:id>', methods=['PUT'])
 def update_student(id):
@@ -176,13 +177,13 @@ def update_student(id):
 
     if not student:
 
-        return jsonify({'ERROR': 'Student is not found'}), 400
+        return jsonify({'ERROR': 'Student is not found'}), 404
 
     data = request.get_json()
 
     if not data:
 
-        return jsonify({"ERROR":"Data is not found"}), 400
+        return jsonify({"ERROR": "Data is not found"}), 404
 
     try:
 
@@ -195,7 +196,33 @@ def update_student(id):
 
         db.session.commit()
 
-        return jsonify({'message': 'Student updated successfully!'})
+        return jsonify({'MESSAGE': 'Student updated successfully!'})
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        return jsonify({"ERROR":"Internal server error","details":str(e)}), 500
+
+
+
+#DELETE STUDENT BY ID (DELETE)
+
+@app.route('/api/students/<int:id>', methods=['DELETE'])
+def delete_student(id):
+
+    student = Student.query.get(id)
+
+    if not student:
+
+        return jsonify({'ERROR': 'Student is not found'}), 404
+
+    try:
+
+        db.session.delete(student)
+        db.session.commit()
+
+        return jsonify({'MESSAGE': 'Student deleted successfully!'})
 
     except Exception as e:
 
@@ -209,17 +236,24 @@ if __name__ == "__main__":
 
     try:
         with app.app_context():
+
             db.session.execute(text("SELECT 1"))
+
             print({"SUCCESS": "Database connected successfully!"})
+
 
             try:
                db.create_all()
+
                print({"SUCCESS": "Tables created successfully!"})
 
             except Exception as e:
+               
                print(f"ERROR: Table creation failed {e}")
 
+
     except Exception as e:
+         
          print(f"ERROR: Database connection failed {e}")
 
     app.run(debug=True, port=7777)
