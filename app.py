@@ -13,7 +13,7 @@ db = SQLAlchemy(app)
 
 class Student(db.Model):
 
-  __tablename__ = 'students'
+  __tablename__ = "students"
 
   id          = db.Column(db.Integer, primary_key=True, autoincrement=True)
   full_name   = db.Column(db.String(100), nullable=False)
@@ -29,39 +29,107 @@ def home():
     return "Flask + MySQL connected successfully!"
 
 
-@app.route('/api/students', methods=['POST'])
+
+#POST METHOD
+
+@app.route("/api/students", methods=["POST"])
 def create_student():
+
     data = request.get_json()
 
+
+    if not data.get("full_name"):
+        return jsonify({
+            "ERROR": "Full name is required"
+        }), 400
+
+
+    if not data.get("email"):
+        return jsonify({
+            "ERROR": "Email is required"
+        }), 400
+
+
+    existing_email = Student.query.filter_by(
+        email=data["email"]
+    ).first()
+
+    if existing_email:
+        return jsonify({
+            "ERROR": "Email already exists"
+        }), 400
+
+
+    if not data.get("age"):
+        return jsonify({
+            "ERROR": "Age is required"
+        }), 400
+
+
+    if data["age"] <= 0:
+        return jsonify({
+            "ERROR": "Age must be a positive number"
+        }), 400
+
+
+    if not data.get("joined_date"):
+        return jsonify({
+            "ERROR": "Joined date is required"
+        }), 400
+
+
     try:
-        new_student    = Student(
-            full_name  =data['full_name'],
-            email      =data['email'],
-            age        =data['age'],
-            cgpa       =data.get('cgpa',0.0),
-            is_active  =data.get('is_active', True),
-            joined_date=datetime.strptime(data['joined_date'],'%Y-%m-%d')
+
+        joined_date = datetime.strptime(
+            data["joined_date"],
+            "%Y-%m-%d"
+        ).date()
+
+    except:
+        return jsonify({
+            "ERROR": "Joined date format must be YYYY-MM-DD"
+        }), 400
+
+
+    if "cgpa" in data:
+
+        if data["cgpa"] < 0:
+            return jsonify({
+                "ERROR": "CGPA cannot be negative"
+            }), 400
+
+
+    try:
+        new_student     = Student(
+            full_name   = data["full_name"],
+            email       = data["email"],
+            age         = data["age"],
+            cgpa        = data.get("cgpa",0.0),
+            is_active   = data.get("is_active", True),
+            joined_date = datetime.strptime(data["joined_date"],"%Y-%m-%d")
         )
 
         db.session.add(new_student)
         db.session.commit()
-        return jsonify({'MESSAGE': 'Created Student Successfully!'}), 201
+
+        return jsonify({"MESSAGE": "Created Student Successfully!"}), 201
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({'ERROR': str(e)}), 400
+        return jsonify({"ERROR":"Internal server error","details":str(e)}), 500
+    
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     try:
         with app.app_context():
-            db.session.execute(text('SELECT 1'))
-            print("SUCCESS: Database connected successfully!")
+            db.session.execute(text("SELECT 1"))
+            print({"SUCCESS": "Database connected successfully!"})
 
             try:
                db.create_all()
-               print("SUCCESS: Tables created successfully!")
+               print({"SUCCESS": "Tables created successfully!"})
 
             except Exception as e:
                print(f"ERROR: Table creation failed {e}")
