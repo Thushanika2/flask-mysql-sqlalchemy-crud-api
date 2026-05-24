@@ -358,6 +358,36 @@ def get_courses():
     
 
 
+#GET COURSE BY ID
+
+@app.route("/api/courses/<int:id>", methods=["GET"])
+def get_course(id):
+
+    try:
+        course=Course.query.get(id)
+
+        if not course:
+
+            return jsonify({"ERROR": "Course is not found"}),404
+
+        return jsonify({
+
+                "id"              : course.id,
+                "course_title"    : course.course_title,
+                "course_fee"      : course.course_fee,
+                "duration_months" : course.duration_months,
+                "description"     : course.description,
+                "is_available"    : course.is_available,
+                "created_at"      : course.created_at.strftime("%Y-%m-%d %H:%M:%S")
+
+        })
+
+    except Exception as e:
+
+        return jsonify({"ERROR":"Internal server error","details":str(e)}), 500
+
+
+
 if __name__ == "__main__":
 
     try:
