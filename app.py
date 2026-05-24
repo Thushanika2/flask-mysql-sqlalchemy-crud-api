@@ -388,6 +388,43 @@ def get_course(id):
 
 
 
+#UPDATE COURSE BY ID(PUT)
+
+@app.route('/api/courses/<int:id>', methods=['PUT'])
+def update_course(id):
+
+    course = Course.query.get(id)
+
+    if not course:
+
+        return jsonify({'ERROR': 'Course is not found'}), 404
+
+    data = request.get_json()
+
+    if not data:
+
+        return jsonify({"ERROR": "Data is not found"}), 404
+
+    try:
+
+        course.course_title     = data.get('course_title',course.course_title)
+        course.course_fee       = data.get('course_fee', course.course_fee)
+        course.duration_months  = data.get('duration_months', course.duration_months)
+        course.description      = data.get('description', course.description)
+        course.is_available     = data.get('is_available', course.is_available)
+
+        db.session.commit()
+
+        return jsonify({'MESSAGE': 'Course updated successfully!'}),201
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        return jsonify({"ERROR":"Internal server error","details":str(e)}), 500
+       
+
+
 if __name__ == "__main__":
 
     try:
