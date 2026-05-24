@@ -9,24 +9,38 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:root123@localhost/my_school"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+@app.route("/")
+def home():
+    return "Flask + MySQL connected successfully!"
+
 db = SQLAlchemy(app)
 
 class Student(db.Model):
 
-  __tablename__ = "students"
+    __tablename__ = "students"
 
-  id          = db.Column(db.Integer, primary_key=True, autoincrement=True)
-  full_name   = db.Column(db.String(100), nullable=False)
-  email       = db.Column(db.String(120), unique=True, nullable=False)
-  age         = db.Column(db.Integer, nullable=False)
-  cgpa        = db.Column(db.Float, nullable=False,default=0.0)
-  is_active   = db.Column(db.Boolean, default=True)
-  joined_date = db.Column(db.Date, nullable=False)
-  created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+    id          = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    full_name   = db.Column(db.String(100), nullable=False)
+    email       = db.Column(db.String(120), unique=True, nullable=False)
+    age         = db.Column(db.Integer, nullable=False)
+    cgpa        = db.Column(db.Float, nullable=False,default=0.0)
+    is_active   = db.Column(db.Boolean, default=True)
+    joined_date = db.Column(db.Date, nullable=False)
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
 
-@app.route("/")
-def home():
-    return "Flask + MySQL connected successfully!"
+
+
+class Course(db.Model):
+
+    __tablename__ = "courses"
+
+    id               = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    course_title     = db.Column(db.String(100), unique=True, nullable=False)
+    course_fee       = db.Column(db.Float, nullable=False)
+    duration_months  = db.Column(db.Integer, nullable=False)
+    description      = db.Column(db.Text, nullable=False)
+    is_available     = db.Column(db.Boolean, default=True)
+    created_at       = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 
@@ -52,7 +66,7 @@ def create_student():
 
 
     existing_email = Student.query.filter_by(email=data["email"]).first()
-    
+
     if existing_email:
 
         return jsonify({"ERROR": "Email already exists"}), 400
