@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from datetime import datetime
@@ -21,12 +21,35 @@ class Student(db.Model):
   age         = db.Column(db.Integer, nullable=False)
   cgpa        = db.Column(db.Float, nullable=False,default=0.0)
   is_active   = db.Column(db.Boolean, default=True)
-  join_date   = db.Column(db.Date, nullable=False)
-  created_at  = db.Column(db.DateTime, default=datetime.now)
+  joined_date = db.Column(db.Date, nullable=False)
+  created_at  = db.Column(db.DateTime, default=datetime.utcnow)
 
 @app.route("/")
 def home():
     return "Flask + MySQL connected successfully!"
+
+
+@app.route('/api/students', methods=['POST'])
+def create_student():
+    data = request.get_json()
+
+    try:
+        new_student    = Student(
+            full_name  =data['full_name'],
+            email      =data['email'],
+            age        =data['age'],
+            cgpa       =data.get('cgpa',0.0),
+            is_active  =data.get('is_active', True),
+            joined_date=datetime.strptime(data['joined_date'],'%Y-%m-%d')
+        )
+
+        db.session.add(new_student)
+        db.session.commit()
+        return jsonify({'MESSAGE': 'Created Student Successfully!'}), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'ERROR': str(e)}), 400
 
 
 if __name__ == '__main__':
