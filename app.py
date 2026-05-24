@@ -186,7 +186,7 @@ def get_student(id):
             "is_active"  : student.is_active,
             "joined_date": student.joined_date.strftime("%Y-%m-%d"),
             "created_at" : student.created_at.strftime("%Y-%m-%d") 
-                       
+
         })
 
     except Exception as e:
@@ -325,6 +325,37 @@ def create_course():
         return jsonify({"ERROR":"Internal server error","details":str(e)}), 500
     
 
+
+#GET ALL COURSES
+
+@app.route("/api/courses", methods=["GET"])
+def get_courses():
+
+    try:
+        courses = Course.query.all()
+
+        course_detail=[]
+
+        for course in courses:
+
+            course_detail.append({
+
+                "id"              : course.id,
+                "course_title"    : course.course_title,
+                "course_fee"      : course.course_fee,
+                "duration_months" : course.duration_months,
+                "description"     : course.description,
+                "is_available"    : course.is_available,
+                "created_at"      : course.created_at.strftime("%Y-%m-%d %H:%M:%S")
+
+            })
+
+        return jsonify(course_detail),200
+    
+    except Exception as e:
+
+        return jsonify({"ERROR":"Internal server error","details":str(e)}), 500
+    
 
 
 if __name__ == "__main__":
