@@ -137,13 +137,15 @@ def create_student():
 def get_students():
 
     try:
-        students= Student.query.all()
+        students = Student.query.all()
 
-        if not student:
+        student_detail=[]
+
+        if not students:
 
             return jsonify({"ERROR": "Student is not found"}),404
 
-        student_detail=[]
+        
 
         for student in students:
 
@@ -174,7 +176,7 @@ def get_students():
 def get_student(id):
 
     try:
-        student=Student.query.get(id)
+        student = Student.query.get(id)
 
         if not student:
 
@@ -373,7 +375,7 @@ def get_courses():
 def get_course(id):
 
     try:
-        course=Course.query.get(id)
+        course = Course.query.get(id)
 
         if not course:
 
