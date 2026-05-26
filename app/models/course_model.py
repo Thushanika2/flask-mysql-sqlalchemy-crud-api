@@ -1,0 +1,14 @@
+from app import db
+from datetime import datetime
+
+class Course(db.Model):
+
+    __tablename__ = "courses"
+
+    id              = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    course_title    = db.Column(db.String(100), unique=True, nullable=False)
+    course_fee      = db.Column(db.Float, nullable=False)
+    duration_months = db.Column(db.Integer, nullable=False)
+    description     = db.Column(db.Text, nullable=False)
+    is_available    = db.Column(db.Boolean, default=True)
+    created_at      = db.Column(db.DateTime, default=datetime.utcnow)
