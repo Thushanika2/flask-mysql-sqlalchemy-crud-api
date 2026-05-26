@@ -1,5 +1,6 @@
 from sqlalchemy import text
-from app import create_app, db
+
+from app.config import create_app, db
 
 app = create_app()
 
