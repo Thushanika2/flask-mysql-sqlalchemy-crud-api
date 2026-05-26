@@ -1,5 +1,7 @@
-from app import db
 from datetime import datetime
+
+from app.config import db
+
 
 class Course(db.Model):
 
